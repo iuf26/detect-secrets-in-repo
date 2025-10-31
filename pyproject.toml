@@ -18,3 +18,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 agent-framework = {allow-prereleases = true}
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^7.0.1"
+
