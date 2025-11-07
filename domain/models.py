@@ -1,9 +1,5 @@
-from typing import List, Sequence, Set, Tuple
+from typing import List, Tuple
 from pydantic import BaseModel, Field
-from agent_framework import ContextProvider
-from agent_framework import ContextProvider, Context, ChatMessage
-from collections.abc import MutableSequence
-from typing import Any
 
 class TextChunk(BaseModel):
     text: str = Field(..., alias="chunk", description="The chunked text content.")
@@ -15,6 +11,18 @@ class TextChunk(BaseModel):
     source_file: str = Field(
         ...,
         description="Path to the file from which the chunk was extracted.",
+    )
+    pull_request_number: str = Field(
+        ...,
+        description="The pull request number",
+    )
+    repo: str = Field(
+        ...,
+        description="The name of the repository",
+    )
+    repo_owner: str = Field(
+        ...,
+        description="The owner of the repository",
     )
     def compare(self, other: "TextChunk") -> bool:
         """Compare two SecretsDetectorAgentMemory objects by source_file and line_span."""
@@ -41,11 +49,23 @@ class SecretsDetectorExecutorResponse(BaseModel):
         default="No agent",
         description="The id of the executor agent who processed this request",
     )
+    pull_request_number: str = Field(
+        ...,
+        description="The pull request number",
+    )
+    repo: str = Field(
+        ...,
+        description="The name of the repository",
+    )
+    repo_owner: str = Field(
+        ...,
+        description="The owner of the repository",
+    )
     def is_empty(self) -> bool:
         return (not self.comments) and (self.original_file == "") and (self.executor_agent == "")
 
 class EmptySecretsDetectorExecutorResponseFactory(SecretsDetectorExecutorResponse):
     @staticmethod
     def get_empty_secrets_detector():
-        return SecretsDetectorExecutorResponse(comments=[], original_file="", executor_agent="")
+        return SecretsDetectorExecutorResponse(comments=[], original_file="", executor_agent="", repo="", repo_owner="", pull_request_number="")
 
