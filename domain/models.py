@@ -31,6 +31,34 @@ class TextChunk(BaseModel):
             and self.line_span == other.line_span
         )
 
+class PRFileInfo(BaseModel):
+    source_file: str = Field(
+        ...,
+        description="FULL Path to the file.",
+    )
+    pull_request_number: str = Field(
+        ...,
+        description="The pull request number",
+    )
+    source_branch: str = Field(
+        ...,
+        description="The source branch of the pull request",
+    )
+    repo: str = Field(
+        ...,
+        description="The name of the repository",
+    )
+    repo_owner: str = Field(
+        ...,
+        description="The owner of the repository",
+    )
+
+class PRFileList(BaseModel):
+    files: List[PRFileInfo] = Field(
+        default_factory=list,
+        description="List of files in the pull request.",
+    )
+
 class LineComment(BaseModel):
     line_number: int = Field(..., description="Line number in the file (1-based).")
     comment: str = Field(..., description="Reviewer comment for this line.")
