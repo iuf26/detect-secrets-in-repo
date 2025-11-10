@@ -1,6 +1,5 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 from pydantic import BaseModel, Field
-
 
 class TextChunk(BaseModel):
     text: str = Field(..., alias="chunk", description="The chunked text content.")
@@ -13,10 +12,24 @@ class TextChunk(BaseModel):
         ...,
         description="Path to the file from which the chunk was extracted.",
     )
-    routing_key: Optional[str] = Field(
-        default=None,
-        description="Routing key for agent processing"
+    pull_request_number: str = Field(
+        ...,
+        description="The pull request number",
     )
+    repo: str = Field(
+        ...,
+        description="The name of the repository",
+    )
+    repo_owner: str = Field(
+        ...,
+        description="The owner of the repository",
+    )
+    def compare(self, other: "TextChunk") -> bool:
+        """Compare two SecretsDetectorAgentMemory objects by source_file and line_span."""
+        return (
+            self.source_file == other.source_file
+            and self.line_span == other.line_span
+        )
 
 class LineComment(BaseModel):
     line_number: int = Field(..., description="Line number in the file (1-based).")
@@ -36,3 +49,23 @@ class SecretsDetectorExecutorResponse(BaseModel):
         default="No agent",
         description="The id of the executor agent who processed this request",
     )
+    pull_request_number: str = Field(
+        ...,
+        description="The pull request number",
+    )
+    repo: str = Field(
+        ...,
+        description="The name of the repository",
+    )
+    repo_owner: str = Field(
+        ...,
+        description="The owner of the repository",
+    )
+    def is_empty(self) -> bool:
+        return (not self.comments) and (self.original_file == "") and (self.executor_agent == "")
+
+class EmptySecretsDetectorExecutorResponseFactory(SecretsDetectorExecutorResponse):
+    @staticmethod
+    def get_empty_secrets_detector():
+        return SecretsDetectorExecutorResponse(comments=[], original_file="", executor_agent="", repo="", repo_owner="", pull_request_number="")
+
