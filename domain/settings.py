@@ -22,6 +22,8 @@ class AppSettings:
     target_pr_number: str
     github_toolsets: str
     github_mcp_server_image: str
+    secret_detector_agents_count: int
+    path_to_docker_exec: str
     chat_client: Optional[OpenAIChatClient] = None
     github_mcp_server: Optional[MCPStdioTool] = None
 
@@ -36,10 +38,14 @@ class AppSettings:
         if dotenv_path is not None:
             load_dotenv(dotenv_path=dotenv_path)
 
+        def _env_or_default(key: str, default: str) -> str:
+            value = os.getenv(key)
+            return value if value not in (None, "") else default
+
         instance = cls(
             openai_api_key=os.getenv("OPENAI_API_KEY", ""),
             openai_model_id=os.getenv("MODEL_ID", ""),
-            github_token=os.getenv("GITHUB_TOKEN_FULL_PERMISIONS", ""),
+            github_token=os.getenv("GITHUB_PAT_TOKEN", ""),
             github_repo=os.getenv("GITHUB_REPO", ""),
             github_owner=os.getenv("GITHUB_OWNER", ""),
             target_pr_number=os.getenv("TARGET_PR_NUMBER", ""),
@@ -47,6 +53,8 @@ class AppSettings:
             github_mcp_server_image=os.getenv(
                 "GITHUB_MCP_SERVER_IMAGE", "ghcr.io/github/github-mcp-server"
             ),
+            secret_detector_agents_count=int(os.getenv("SECRETS_DETECTOR_AGENT_COUNT", 3)),
+            path_to_docker_exec=_env_or_default("DOCKER_EXEC_PATH", "docker"),
         )
         instance.chat_client = OpenAIChatClient(
             api_key=instance.openai_api_key,
@@ -54,7 +62,7 @@ class AppSettings:
         )
         instance.github_mcp_server = MCPStdioTool(
             name="GitHubMCP",
-            command="docker",
+            command=instance.path_to_docker_exec,
             args=[
                 "run",
                 "-i",
