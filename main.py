@@ -5,13 +5,14 @@ from domain.agents.chunk_agregator import ChunksAgregatorExec
 from domain.agents.chunk_exporter import ChunksExporterExec
 from domain.agents.secrets_detector import SecretsDetectorExec
 from domain.settings import settings
+from domain.logging import logger
 from domain.utils import CustomResponseEvent
 
 async def init_github_mcp():
     if settings.github_mcp_server is None:
         raise RuntimeError("GitHub MCP server tool was not initialized in settings.")
     await settings.github_mcp_server.connect()
-    print("GitHub MCP connected")
+    logger.info("GitHub MCP connected")
 
 def init_secret_detector_agents(agents_count: int) -> list[SecretsDetectorExec]:
     """
@@ -43,13 +44,17 @@ async def run_secrets_detector():
     async for event in workflow.run_stream(""):
         match event:
             case CustomResponseEvent() as output:
-                print(f"Workflow finished")
+                logger.info("Secrets detector workflow finished!")
             case ExecutorInvokedEvent() as invoke:
-                print(f"Starting {invoke.executor_id}")
+                logger.info("Starting %s", invoke.executor_id)
             case ExecutorCompletedEvent() as complete:
-                print(f"Completed {complete.executor_id}: {complete.data}")
+                logger.info("Completed %s: %s", complete.executor_id, complete.data)
 
 
 def start():
     asyncio.run(run_secrets_detector())
+
+if __name__ == "__main__":
+    asyncio.run(run_secrets_detector())
+
     

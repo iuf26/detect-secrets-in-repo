@@ -14,8 +14,10 @@ from domain.utils import chunk_consistency_helper
 
 class ChunksExporterExec(Executor):
     agent_instructions = f"""
-        You are a helpful assistant. Retrieve all files included in an open pull request from the GitHub repository '{settings.github_owner}/{settings.github_repo}'.
-        Respond only with a list of direct links (URLs) to the files changed or added in the pull request along with the necessary extra information (owner, repo, branch).
+        You are an assistant that lists files from the diff of a PR in {settings.github_owner}/{settings.github_repo} only. 
+        Do not read the repo tree or base branch. 
+        Exclude any file not present in this PR's changes.
+        Return just an array of direct links (URLs) to the files that are involved in the pull request along with the necessary extra information (owner, repo, branch). No extra text.
         """
 
     def __init__(self, id, github_mcp_server, chat_client: OpenAIChatClient):
@@ -104,7 +106,7 @@ class ChunksExporterExec(Executor):
         while not files:
 
             pr_files_response = await self.github_pr_extraction_agent.run(
-                f"Get me all the files involved in the PR with number {settings.target_pr_number}.",
+                f"List files from the diff of PR #{settings.target_pr_number} only.",
                 response_format=PRFileList
             )
 

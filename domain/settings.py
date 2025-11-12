@@ -49,7 +49,7 @@ class AppSettings:
             github_repo=os.getenv("GITHUB_REPO", ""),
             github_owner=os.getenv("GITHUB_OWNER", ""),
             target_pr_number=os.getenv("TARGET_PR_NUMBER", ""),
-            github_toolsets=os.getenv("GITHUB_TOOLSETS", "context,pull_requests"),
+            github_toolsets=os.getenv("GITHUB_TOOLSETS", "context,repos,issues,pull_requests,users"),
             github_mcp_server_image=os.getenv(
                 "GITHUB_MCP_SERVER_IMAGE", "ghcr.io/github/github-mcp-server"
             ),
@@ -74,6 +74,7 @@ class AppSettings:
                 instance.github_mcp_server_image,
             ],
             chat_client=instance.chat_client,
+            load_prompts=False
         )
         return instance
 
