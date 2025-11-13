@@ -25,11 +25,15 @@ GITHUB_TOKEN = os.getenv("GH_TOKEN_FULL_PERMISIONS")
 GITHUB_REPO = os.getenv("GH_REPO")
 GITHUB_OWNER = os.getenv("GH_OWNER")
 TARGET_PR_NUMBER = os.getenv("TARGET_PR_NUMBER")
+
+if '/' in GITHUB_REPO:
+    GITHUB_OWNER, GITHUB_REPO = GITHUB_REPO.split('/', 1)
+
 # Specify the toolsets we want. There are far more, but only these are needed for this example.
 # And we don't want to bloat the agent's context with unnecessary tools.
 toolsets = "context,pull_requests" 
 
-print("Using GitHub repo:", f"{GITHUB_OWNER}/{GITHUB_REPO}")
+print("Using GitHub repo:", f"{GITHUB_REPO}")
 
 async def create_github_mcp_server():
     github_mcp = MCPStdioTool(
@@ -280,8 +284,10 @@ class ChunksExporterExec(Executor):
         input_chunks = []
         for file in files:
             try:
+                filepath = f"https://raw.githubusercontent.com/{file.repo_owner}/{file.repo}/refs/heads/{file.source_branch}/{file.source_file}"
+                print(f"Processing file: {filepath}")
                 chunks = split_file_by_newlines(
-                    file_path=f"https://raw.githubusercontent.com/{file.repo_owner}/{file.repo}/{file.source_branch}/{file.source_file}",
+                    file_path=filepath,
                     newlines_per_chunk=10,
                     pull_request_number=file.pull_request_number,
                     repo=file.repo,
